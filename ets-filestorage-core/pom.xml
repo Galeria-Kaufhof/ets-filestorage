@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>de.kaufhof.ets</groupId>
+        <artifactId>ets-library-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath />
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <!-- must not be the same as the parent because the parent is NOT the same project! -->
+    <version>0.1.0-SNAPSHOT</version>
+
+    <artifactId>ets-filestorage-core</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${ets.scala.compat.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-http_${ets.scala.compat.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-stream_${ets.scala.compat.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-stm</groupId>
+            <artifactId>scala-stm_${ets.scala.compat.version}</artifactId>
+            <version>0.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.typesafe.play</groupId>
+            <artifactId>play-json_${ets.scala.compat.version}</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>de.kaufhof.ets</groupId>
+            <artifactId>ets-akka-stream-utils-core</artifactId>
+        </dependency>
+
+    </dependencies>
+</project>
