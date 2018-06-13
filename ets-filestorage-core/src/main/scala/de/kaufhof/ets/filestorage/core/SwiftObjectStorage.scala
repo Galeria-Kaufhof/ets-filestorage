@@ -8,9 +8,9 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.RawHeader
 import akka.stream.Materializer
-import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
-import de.kaufhof.ess.eval.common.streamutils.StreamUtils
+import de.kaufhof.ets.akkastreamutils.core.StreamUtils
 
 import scala.concurrent.Future
 import scala.concurrent.stm.Ref

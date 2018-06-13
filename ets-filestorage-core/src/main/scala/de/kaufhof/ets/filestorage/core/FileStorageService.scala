@@ -8,11 +8,10 @@ import java.util.UUID
 
 import akka.NotUsed
 import akka.http.scaladsl.coding.Gzip
-import akka.stream.Materializer
 import akka.stream.scaladsl.{Flow, Keep, Sink, Source}
 import akka.util.ByteString
-import de.kaufhof.ess.eval.common.streamutils.StreamUtils
-import de.kaufhof.ess.eval.common.streamutils.implicits._
+import de.kaufhof.ets.akkastreamutils.core.StreamUtils
+import de.kaufhof.ets.akkastreamutils.core.implicits._
 import javax.xml.bind.DatatypeConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,8 +50,9 @@ trait FileStorageService[F[_]] {
 }
 
 class FileStorageServiceImpl[F[_]](repo: FileStorageRepository[F],
-                                                   objectStorage: SwiftObjectStorage)
-                                                  (implicit ec: ExecutionContext, mat: Materializer, clock: Clock, executor: FutureExecutor[F])
+                                   objectStorage: SwiftObjectStorage,
+                                   namingStrategy: (StoringService, Instant) => String = FileStorageService.objectPath)
+                                  (implicit ec: ExecutionContext, clock: Clock, executor: FutureExecutor[F])
   extends FileStorageService[F] with ObjectstoreLogging {
 
   override def getFileContent(service: StoringService, fileHash: FileHash): Source[ByteString, NotUsed] = {
@@ -89,7 +89,7 @@ class FileStorageServiceImpl[F[_]](repo: FileStorageRepository[F],
       .toMat(StreamUtils.fixedBroadcastHub)(Keep.both)
       .mapMaterializedValue{case (fileDetailRes, uploadSource) =>
         val uploadDate = clock.instant()
-        val objectPath = FileStorageService.objectPath(service, uploadDate)
+        val objectPath = namingStrategy(service, uploadDate)
 
         (for {
           _                    <- objectStorage.upload(objectPath, uploadSource)
@@ -110,7 +110,7 @@ class FileStorageServiceImpl[F[_]](repo: FileStorageRepository[F],
           case Failure(exc) =>
             //try to delete file if upload fails
             objectStorage.delete(objectPath)
-              .recover{ case exc: Throwable => log.error("Could not delete file in object storage after prev. failure", exc) }
+              .recover{ case _: Throwable => log.error("Could not delete file in object storage after prev. failure", exc) }
         }
       }
   }
