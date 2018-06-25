@@ -137,7 +137,7 @@ private[core] object FileStorageService {
   def fileDetailSink(implicit ec: ExecutionContext): Sink[ByteString, Future[(Long, FileHash)]] = {
 
     Flow[ByteString]
-      .statefulFold(() => (0L, MessageDigest.getInstance("MD5"))){ (state, bs) =>
+      .statefulFold((0L, MessageDigest.getInstance("MD5"))){ (state, bs) =>
         val (size, md) = state
         md.update(bs.asByteBuffer)
         (size + bs.size.toLong, md)
