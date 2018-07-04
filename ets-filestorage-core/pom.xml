@@ -11,9 +11,13 @@
 
     <modelVersion>4.0.0</modelVersion>
     <!-- must not be the same as the parent because the parent is NOT the same project! -->
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
 
     <artifactId>ets-filestorage-core</artifactId>
+
+    <description>
+        ETS Filestorage library core implementation
+    </description>
 
     <!-- For galeria kaufhof internal purposes only, this profile will be removed in future!
     This will not work for releases! The idea is to call mvn -P scala-2.11 package and copy the pure target/<lib>.jar
@@ -81,8 +85,8 @@
             <dependencies>
                 <dependency>
                     <groupId>de.kaufhof.ets</groupId>
-                    <artifactId>ets-akka-stream-utils-core</artifactId>
-                    <version>0.1-SNAPSHOT</version>
+                    <artifactId>ets-akkastreamutils-core</artifactId>
+                    <version>0.1.0</version>
                     <exclusions>
                         <exclusion>
                             <artifactId>*</artifactId>
@@ -129,7 +133,7 @@
         <dependency>
             <groupId>de.kaufhof.ets</groupId>
             <artifactId>ets-akkastreamutils-core</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>0.1.0</version>
         </dependency>
 
         <dependency>

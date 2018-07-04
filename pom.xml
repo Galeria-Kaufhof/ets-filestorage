@@ -10,7 +10,11 @@
         <version>[0.1.0,1)</version>
         <relativePath />
     </parent>
-    
+
+    <description>
+        ETS Filestorage Aggregator POM
+    </description>
+
     <artifactId>ets-filestorage-aggregator</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
@@ -19,5 +23,27 @@
         <module>ets-filestorage-core</module>
     </modules>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>galeria-kaufhof</id>
+            <name>Galeria Kaufhof</name>
+            <url>https://github.com/Galeria-Kaufhof</url>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/Galeria-Kaufhof/ets-filestorage</url>
+        <connection>scm:git:git@github.com:Galeria-Kaufhof/ets-filestorage.git</connection>
+        <developerConnection>scm:git:git@github.com:Galeria-Kaufhof/ets-filestorage.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
 </project>
