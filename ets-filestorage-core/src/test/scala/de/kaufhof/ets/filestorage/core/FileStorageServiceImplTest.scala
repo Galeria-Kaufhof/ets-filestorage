@@ -36,7 +36,7 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
 
       val fileInfo = await(f.runUpload().map(_.commit))
 
-      f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
+      await(f.objectStorage.get(fileInfo.objectPath)) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
       f.repo.insert _ verify fileInfo
@@ -55,7 +55,7 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
 
       fileInfo.objectPath shouldNot be(prevFileInfo.objectPath)
 
-      f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
+      await(f.objectStorage.get(fileInfo.objectPath)) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
       (f.repo.insert _ verify (*)).never()
@@ -75,7 +75,7 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       val fileInfo = await(f.runUpload().map(_.commit))
 
       fileInfo.objectPath shouldEqual prevFileInfo.objectPath
-      f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
+      await(f.objectStorage.get(fileInfo.objectPath)) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
       (f.repo.insert _ verify (*)).never()
@@ -137,7 +137,7 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       val fileInfo = await(fileInfoRes)
       fileInfoLater = fileInfo
 
-      f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(ByteString.empty)
+      await(f.objectStorage.get(fileInfo.objectPath)) shouldEqual Some(ByteString.empty)
       await(f.testee.getFileContentGzip(storingService, fileInfo.fileHash).runFold(ByteString.empty)(_ ++ _)) shouldEqual ByteString(31, -117, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     }
 
