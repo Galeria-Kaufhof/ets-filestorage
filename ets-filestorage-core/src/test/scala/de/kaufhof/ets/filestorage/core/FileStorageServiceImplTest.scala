@@ -31,14 +31,16 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
     "upload a file when no db entry and file exists" in {
       val f = fixture
       f.repo.getFileInfo _ when (*, *) returns None
-      f.repo.save _ when (*) returns (())
+      f.repo.insert _ when (*) returns (())
+      f.repo.update _ when (*, *, *) returns (())
 
       val fileInfo = await(f.runUpload().map(_.commit))
 
       f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
-      f.repo.save _ verify fileInfo
+      f.repo.insert _ verify fileInfo
+      (f.repo.update _ verify (*, *, *)).never()
     }
 
     "upload a file when a db entry but no file exists" in {
@@ -46,7 +48,8 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       val prevFileInfo = FileInfo(storingService, FileHash("dummy"), "dummy", 100, Instant.now())
 
       f.repo.getFileInfo _ when (*, *) returns Some(prevFileInfo)
-      f.repo.save _ when (*) returns (())
+      f.repo.insert _ when (*) returns (())
+      f.repo.update _ when (*, *, *) returns (())
 
       val fileInfo = await(f.runUpload().map(_.commit))
 
@@ -55,7 +58,8 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
-      f.repo.save _ verify fileInfo
+      (f.repo.insert _ verify (*)).never()
+      f.repo.update _ verify (fileInfo.service, fileInfo.fileHash, fileInfo.objectPath)
     }
 
     "immediately delete the new uploaded file if a db entry and an identical file exists" in {
@@ -63,7 +67,9 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       val prevFileInfo = FileInfo(storingService, FileHash("dummy"), "dummy", 100, Instant.now())
 
       f.repo.getFileInfo _ when (*, *) returns Some(prevFileInfo)
-      f.repo.save _ when (*) returns (())
+      f.repo.insert _ when (*) returns (())
+      f.repo.update _ when (*, *, *) returns (())
+
       f.objectStorage.put(prevFileInfo.objectPath, fullTestData)
 
       val fileInfo = await(f.runUpload().map(_.commit))
@@ -72,17 +78,22 @@ class FileStorageServiceImplTest extends WordSpec with Matchers with MockFactory
       f.objectStorage.get(fileInfo.objectPath) shouldEqual Some(fullTestData)
       f.objectStorage.count shouldEqual 1
 
-      (f.repo.save _ verify (*)).never()
+      (f.repo.insert _ verify (*)).never()
+      (f.repo.update _ verify (*, *, *)).never()
     }
 
     "rollback the upload on user request" in  {
       val f = fixture
       f.repo.getFileInfo _ when (*, *) returns None
-      f.repo.save _ when (*) returns (())
+      f.repo.insert _ when (*) returns (())
+      f.repo.update _ when (*, *, *) returns (())
 
       await(f.runUpload().flatMap(_.rollback))
 
       f.objectStorage.count shouldEqual 0
+
+      (f.repo.insert _ verify (*)).never()
+      (f.repo.update _ verify (*, *, *)).never()
     }
 
     "rollback the upload on error" in {
