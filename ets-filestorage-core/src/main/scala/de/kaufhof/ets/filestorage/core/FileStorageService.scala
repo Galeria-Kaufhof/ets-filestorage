@@ -103,7 +103,20 @@ class FileStorageServiceImpl[F[_]](repo: FileStorageRepository[F],
           val newFileInfo: FileInfo = FileInfo(service, fileDetail._2, objectPath, fileDetail._1, uploadDate)
           val fileInfo = existingFileInfoOpt.filter(_ => fileExists).getOrElse(newFileInfo)
 
-          val commit = () => executor.map(if (fileExists) executor.pure(()) else repo.save(fileInfo))(_ => fileInfo)
+          def dbUpdate: F[Unit] = if (fileExists) {
+            //file exists in object storage and repo
+            executor.pure(())
+          } else {
+            if (existingFileInfoOpt.isDefined) {
+              //entry in repo exists
+              repo.update(fileInfo.service, fileInfo.fileHash, fileInfo.objectPath)
+            } else {
+              //entry in repo does not exist
+              repo.insert(fileInfo)
+            }
+          }
+
+          val commit = () => executor.map(dbUpdate)(_ => fileInfo)
 
           new UploadRollbackOrCommit[F](createUndo(fileExists, objectPath), commit)
         }).andThen{

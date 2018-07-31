@@ -5,17 +5,18 @@ import akka.http.scaladsl.coding.Gzip
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.ByteString
+import de.kaufhof.ets.akkastreamutils.core.StreamUtils
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.stm.{Ref, atomic}
 
 class SwiftInMemoryMock(implicit ec: ExecutionContext, mat: Materializer) extends SwiftObjectStorage {
 
-  private val memoryStore = Ref(Map.empty[String, ByteString])
+  private[core] val memoryStore = Ref(Map.empty[String, ByteString])
   private val chunkSize = 8192
 
   override def upload(objectPath: String, src: Source[ByteString, NotUsed]): Future[Unit] =
-    src.runWith(Sink.fold(ByteString.empty)(_ ++ _)).map{fileContent =>
+    src.via(StreamUtils.gzipEncodeFlow()).runWith(Sink.fold(ByteString.empty)(_ ++ _)).map{fileContent =>
       atomic {implicit txn =>
         memoryStore() = memoryStore() + (objectPath -> fileContent)
       }
@@ -27,7 +28,7 @@ class SwiftInMemoryMock(implicit ec: ExecutionContext, mat: Materializer) extend
         val chunk = fileContent.take(chunkSize)
         val remaining = fileContent.drop(chunkSize)
         Some((remaining, chunk)).filter(_ => chunk.nonEmpty)
-      }
+      }.via(Gzip.decoderFlow)
       case None =>
         Source.failed(ObjectNotExistingException(objectPath))
     }
@@ -41,11 +42,11 @@ class SwiftInMemoryMock(implicit ec: ExecutionContext, mat: Materializer) extend
 
   override def exists(objectPath: String): Future[Boolean] = Future.successful(memoryStore.single().contains(objectPath))
 
-  def get(objectPath: String): Option[ByteString] =
-    memoryStore.single().get(objectPath)
+  def get(objectPath: String): Future[Option[ByteString]] =
+    memoryStore.single().get(objectPath).map(content => Gzip.decode(content).map(Some(_))).getOrElse(Future.successful(None))
 
   def put(objectPath: String, content: ByteString): Unit = atomic{ implicit txn =>
-    memoryStore() = memoryStore() + (objectPath -> content)
+    memoryStore() = memoryStore() + (objectPath -> Gzip.encode(content))
   }
 
   def count: Int =
